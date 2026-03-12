@@ -2,6 +2,8 @@ from flask import Flask, render_template
 
 app = Flask(__name__)
 
+# routes for all pages
+
 @app.route('/')
 def index():
     return render_template('index.html')
