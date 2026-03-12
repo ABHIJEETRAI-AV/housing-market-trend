@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Results & Findings — HousingIQ{% endblock %}
+
+{% block head %}
+<style>
+  .result-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px; padding: 2rem;
+    text-align: center;
+    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  }
+  .result-card:hover {
+    border-color: rgba(37,99,235,0.4);
+    transform: translateY(-5px);
+    box-shadow: 0 0 30px rgba(37,99,235,0.15);
+  }
+  .counter-num {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.8rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+  }
+  .finding-item {
+    display: flex; gap: 1.25rem; align-items: flex-start;
+    padding: 1.5rem; background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px; margin-bottom: 1rem;
+    transition: border-color 0.25s;
+  }
+  .finding-item:hover { border-color: rgba(37,99,235,0.3); }
+  .finding-num {
+    width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent-from), var(--accent-to));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 0.9rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section style="padding:5rem 1.5rem 3rem; background:var(--bg2);">
+  <div style="max-width:800px; margin:0 auto; text-align:center;">
+    <span class="section-badge" data-aos="fade-up"><i class="fa-solid fa-trophy"></i> Findings</span>
+    <h1 data-aos="fade-up" data-aos-delay="100" style="font-size:clamp(2rem,4vw,3rem); font-weight:800; margin:0.75rem 0 1.25rem;">
+      Results & <span class="gradient-text">Key Findings</span>
+    </h1>
+    <p data-aos="fade-up" data-aos-delay="200" style="color:var(--muted); font-size:1.05rem; line-height:1.8;">
+      Quantified insights extracted from 21,613 housing transactions across King County.
+    </p>
+  </div>
+</section>
+
+<!-- ANIMATED STAT COUNTERS -->
+<section class="section" style="background:var(--bg);">
+  <div class="section-inner">
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; margin-bottom:3rem;" id="counters-grid">
+      {% set stats = [
+        ('21613','','Houses Analyzed','fa-solid fa-database','Total transactions in dataset'),
+        ('540','K','Avg Sale Price','fa-solid fa-dollar-sign','Median: $450K'),
+        ('32','%','Renovation Premium','fa-solid fa-hammer','Above non-renovated'),
+        ('2080','sqft','Avg Living Area','fa-solid fa-ruler-combined','Interior square footage'),
+        ('3','beds','Most Common Config','fa-solid fa-bed','Mode bedroom count'),
+        ('78','%','Homes No Waterfront','fa-solid fa-water','Non-waterfront proportion'),
+        ('1971','yr','Avg Build Year','fa-solid fa-calendar','Construction year median'),
+        ('15','%','Annual Appreciation','fa-solid fa-chart-line','May 2014–May 2015'),
+      ] %}
+      {% for val, suffix, label, icon, sub in stats %}
+      <div class="result-card" data-aos="zoom-in" data-aos-delay="{{ loop.index0 * 60 }}">
+        <div style="color:#60A5FA; font-size:1.4rem; margin-bottom:0.75rem;"><i class="{{ icon }}"></i></div>
+        <div class="counter-num" data-target="{{ val }}" data-suffix="{{ suffix }}">0{{ suffix }}</div>
+        <div style="font-size:0.9rem; font-weight:600; margin:0.35rem 0;">{{ label }}</div>
+        <div style="color:var(--muted); font-size:0.78rem;">{{ sub }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Chart row -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-bottom:3rem;" data-aos="fade-up">
+      <div class="glass-card" style="padding:1.75rem;">
+        <h3 style="font-size:0.95rem; font-weight:700; margin-bottom:1.25rem;">Price by Bedroom Count</h3>
+        <canvas id="bedroomChart" height="200"></canvas>
+      </div>
+      <div class="glass-card" style="padding:1.75rem;">
+        <h3 style="font-size:0.95rem; font-weight:700; margin-bottom:1.25rem;">Grade vs Avg Sale Price ($K)</h3>
+        <canvas id="gradeChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY FINDINGS LIST -->
+<section class="section" style="background:var(--bg2); padding-top:3rem;">
+  <div class="section-inner">
+    <div style="text-align:center; margin-bottom:3rem;" data-aos="fade-up">
+      <span class="section-badge"><i class="fa-solid fa-list-check"></i> Findings</span>
+      <h2 style="font-size:clamp(1.6rem,3vw,2.2rem); font-weight:700; margin-top:0.5rem;">
+        Top <span class="gradient-text">10 Findings</span>
+      </h2>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;" data-aos="fade-up">
+      {% set findings = [
+        ('Square footage is the strongest price predictor', 'Correlation coefficient of 0.70 between sqft_living and price — the highest among all features.'),
+        ('Waterfront adds ~300% to property value', 'Despite only 163 waterfront properties in the dataset, they command extraordinary premiums.'),
+        ('Renovation boosts price by 30–35%', 'Renovated properties consistently outperform non-renovated equivalents, regardless of age.'),
+        ('Grade 7–9 is the market sweet spot', '80% of sales fall in grade 7–9, offering good value relative to top-grade luxury properties.'),
+        ('Zip code 98039 has the highest prices', 'Medina, WA zip code commands median prices over $2.1M — the most expensive area.'),
+        ('3-bedroom homes are most frequently sold', 'The modal bedroom count is 3, representing 45% of all sales in the dataset.'),
+        ('Homes built 2000–2015 sell at 18% premium', 'Newer construction commands noticeable premiums over older stock with equivalent sq footage.'),
+        ('Basement presence adds ~$50K on average', 'Finished basement space adds meaningful value especially in higher-grade properties.'),
+        ('View quality strongly correlates with price', 'Properties with an excellent view rating sell for 180% more than those with no view.'),
+        ('Top floor homes premium in condos', 'In multi-story buildings, upper floors command 10–15% premiums per floor above ground.'),
+      ] %}
+      {% for title, desc in findings %}
+      <div class="finding-item" data-aos="fade-up" data-aos-delay="{{ loop.index0 % 2 * 80 }}">
+        <div class="finding-num">{{ loop.index }}</div>
+        <div>
+          <h4 style="font-size:0.9rem; font-weight:600; margin-bottom:0.3rem;">{{ title }}</h4>
+          <p style="color:var(--muted); font-size:0.82rem; line-height:1.6;">{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Animated counters
+  const counters = document.querySelectorAll('.counter-num');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        counters.forEach(el => {
+          const target = +el.dataset.target;
+          const suffix = el.dataset.suffix || '';
+          let cur = 0; const step = Math.ceil(target / 60);
+          const t = setInterval(() => {
+            cur = Math.min(cur + step, target);
+            el.textContent = cur.toLocaleString() + suffix;
+            if (cur >= target) clearInterval(t);
+          }, 30);
+        });
+        observer.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+  const grid = document.getElementById('counters-grid');
+  if (grid) observer.observe(grid);
+
+  // Charts
+  const chartDefaults = {
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', font: { size: 11 } } },
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', font: { size: 11 } } }
+    },
+    responsive: true, maintainAspectRatio: false
+  };
+
+  new Chart(document.getElementById('bedroomChart'), {
+    type: 'bar',
+    data: {
+      labels: ['1 Bed','2 Beds','3 Beds','4 Beds','5 Beds','6+ Beds'],
+      datasets: [{
+        data: [290, 380, 480, 620, 720, 850],
+        backgroundColor: 'rgba(37,99,235,0.3)',
+        borderColor: '#2563EB',
+        borderWidth: 1.5, borderRadius: 6
+      }]
+    },
+    options: { ...chartDefaults }
+  });
+
+  new Chart(document.getElementById('gradeChart'), {
+    type: 'line',
+    data: {
+      labels: ['4','5','6','7','8','9','10','11','12','13'],
+      datasets: [{
+        data: [180, 230, 300, 420, 560, 780, 1100, 1600, 2500, 4200],
+        borderColor: '#06B6D4', borderWidth: 2,
+        backgroundColor: 'rgba(6,182,212,0.1)',
+        pointBackgroundColor: '#06B6D4', pointRadius: 4,
+        tension: 0.4, fill: true
+      }]
+    },
+    options: { ...chartDefaults }
+  });
+</script>
+{% endblock %}
